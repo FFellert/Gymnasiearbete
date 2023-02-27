@@ -3,10 +3,18 @@ package Entity;
 import java.awt.*;
 
 public class GhostEntity extends Entity {
-    public GhostEntity(Image image, double xPos, double yPos, int speed) {
+    public double Health;
+    public GhostEntity(Image image, double xPos, double yPos, int speed, double Health) {
         super(image, xPos, yPos, speed);
+        this.Health = Health;
         dy = 3;
         this.setActive(false);
+    }
+    public double getHealth() {
+        return Health;
+    }
+    public void setHealth(double Health) {
+        this.Health = Health;
     }
 
     /**
