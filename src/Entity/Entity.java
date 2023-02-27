@@ -84,12 +84,8 @@ public abstract class Entity implements Drawable {
     public boolean getActive() {
         return active;
     }
-    public int getWidth() {
-        return width;
-    }
-    public int getHeight() {
-        return height;
-    }
+    public int getWidth() { return image.getWidth(null); }
+    public int getHeight() { return image.getHeight(null); }
     public void setImage(Image image) {
         this.image = image;
     }
