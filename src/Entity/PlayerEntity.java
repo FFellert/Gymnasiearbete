@@ -7,9 +7,14 @@ import java.util.Objects;
 public class PlayerEntity extends Entity{
 
     public LaserEntity laser = null;
+    int Gold;
+    int Damage;
 
-    public PlayerEntity(Image image, double xPos, double yPos, int speed) {
+
+    public PlayerEntity(Image image, double xPos, double yPos, int speed, int Gold, int Damage) {
         super(image, xPos, yPos, speed);
+        this.Gold = Gold;
+        this.Damage = Damage;
     }
 
     public void left(){
@@ -25,6 +30,7 @@ public class PlayerEntity extends Entity{
         dy = -1;
     }
 
+
     /**
      * Metod som gör förflyttningen, dvs ändrar xPos och yPos
      * Måste skapas i klasser som ärver entity
@@ -34,6 +40,18 @@ public class PlayerEntity extends Entity{
     public void move(long deltaTime) {
         yPos += dy*(deltaTime/1000000000.0)*speed;
         xPos += dx*(deltaTime/1000000000.0)*speed;
+    }
+    public int getGold() {
+        return Gold;
+    }
+    public void setGold(int Gold) {
+        this.Gold = Gold;
+    }
+    public int getDamage() {
+        return Damage;
+    }
+    public void setDamage(int Damage) {
+        this.Damage = Damage;
     }
     public boolean tryToFire() {
         if(laser == null || !laser.getActive()){
