@@ -16,25 +16,18 @@ public class GameMain implements KeyListener{
 	private HashMap<String, Boolean> keyDown = new HashMap<>();
 	private boolean gameRunning = true;
 	private PlayerEntity player;
-	public int GhostKilled = 1;
+	public int GhostKilled = 0;
 	public int playerKills = 0;
-	private TabEntity GoldTAB;
-	private TabEntity DmgTAB;
-	private TabEntity AmountTAB;
-	private Image[] GoldR = new Image[3];
-	private Image[] GoldN = new Image[3];
-	private Image[] DmgR = new Image[3];
-	private Image[] DmgN = new Image[3];
-	private Image[] AmountR = new Image[3];
-	private Image[] AmountN = new Image[3];
-	Image Laserimg;
+	public int LevelTag = 0;
 	private GameScreen gameScreen;
-
-	int width = 1600;
+	public int Constant = 1;
+	int width = 1200;
 	int height = 1200;
 	public int dy;
 	public int dx;
-	public int Gold = 0;
+	public int dxG = 3;
+	public int dyG = 3;
+	public String direction;
 	Image[] Playerimg = new Image[5];
 	public Font font = null;
 	private TxtContainer msg;
@@ -43,18 +36,7 @@ public class GameMain implements KeyListener{
 	private ArrayList<Entity> spriteList = new ArrayList<Entity>();
 
 	public GameMain(){
-		try {
-			String path = getClass().getResource("resources/Droid_Lover/droidlover.ttf").getFile();
-			path = URLDecoder.decode(path, "utf-8");
-
-			font = Font.createFont(Font.TRUETYPE_FONT, new File(path));
-			font = font.deriveFont(32f); // Typsnittsstorlek
-		} catch (IOException | FontFormatException e) {
-			System.err.println("Error loading font file: " + e.getMessage());
-			e.printStackTrace();
-		}
 		loadImages();
-		msg = new TxtContainer(Integer.toString(Gold), 10, 32, font, Color.GREEN);
 		gameScreen = new GameScreen("Game", width, height, false); // false vid testkörning
 		gameScreen.setKeyListener(this);
 		keyDown.put("left", false);
@@ -66,98 +48,80 @@ public class GameMain implements KeyListener{
 		gameLoop();
 
 	}
+	public void checkCollisionAndRemove(){
+		ArrayList<Entity> removeList = new ArrayList<>();
+
+		if(player.laser != null && player.laser.getActive()){
+			for(int i = 1; i < spriteList.size(); i++) {
+				if (spriteList.get(i).collision(player.laser)) {
+					player.laser.setActive(false);
+					player.laser = null;
+					GhostEntity g = (GhostEntity)spriteList.get(i);
+					g.setHealth(g.getHealth() - player.getDamage());
+					if (g.getHealth() <= 0) {
+						playerKills++;
+						GhostKilled++;
+						player.setGold(player.getGold() + g.getGold());
+						removeList.add(g);
+					}
+				}
+				if(player.laser == null)
+					break;
+			}
+		}
+		spriteList.removeAll(removeList); // Alt namnet på arraylist
+	}
 
 	public void loadImages(){
 		Ghostimg = new ImageIcon(getClass().getResource("resources/ghostImg.png")).getImage();
-		/*
-		GoldR[0] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x1GoldR.png"))).getImage();
-		GoldR[1] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x10GoldR.png"))).getImage();
-		GoldR[2] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x100GoldR.png"))).getImage();
-
-		GoldN[0] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x1GoldN.png"))).getImage();
-		GoldN[1] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x10GoldN.png"))).getImage();
-		GoldN[2] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x100GoldN.png"))).getImage();
-
-		DmgR[0] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x1DmgR.png"))).getImage();
-		DmgR[1] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x10DmgR.png"))).getImage();
-		DmgR[2] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x100DmgR.png"))).getImage();
-
-		DmgN[0] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x1DmgN.png"))).getImage();
-		DmgN[1] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x10DmgN.png"))).getImage();
-		DmgN[2] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x100DmgN.png"))).getImage();
-
-		AmountR[0] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x1AmountR.png"))).getImage();
-		AmountR[1] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x10AmountR.png"))).getImage();
-		AmountR[2] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x100AmountR.png"))).getImage();
-
-		AmountN[0] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x1AmountN.png"))).getImage();
-		AmountN[1] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x10AmountN.png"))).getImage();
-		AmountN[2] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/x100AmountN.png"))).getImage();
-
-		 */
 		Playerimg[0] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/playerImg.png"))).getImage();
 		Playerimg[1] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/playerImgRight.png"))).getImage();
 		Playerimg[2] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/playerImgLeft.png"))).getImage();
 		Playerimg[3] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/playerImgUp.png"))).getImage();
 		Playerimg[4] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/playerImgDown.png"))).getImage();
-		player = new PlayerEntity(Playerimg[0], (width/2), (height/2), 200, 0, calcDamage());
-
-		//Gold = new TabEntity(DmgR[0], 1500, 0, 0 );
-		//Dmg = new TabEntity(GoldR[0], 1500, 100, 0 );
-		//Amount = new TabEntity(AmountR[0], 1500, 200, 0 );
+		player = new PlayerEntity(Playerimg[0], (width/2), (height/2), 400, 0, LevelTag*(playerKills*25) +1000);
 		spriteList.add(player);
-		//spriteList.add(Gold);
-		//spriteList.add(Dmg);
-		//spriteList.add(Amount);
-
 		for (int i = 1; i < 2; i++) {
-			spriteList.add(new GhostEntity(Ghostimg,0,(height/10)*i,30, 30, dy, dx, 5));
+			spriteList.add(new GhostEntity(Ghostimg,width*Math.random(),height*Math.random(),30, 30, dy*i, dx, 5));
 		}
 		for(int i = 1; i < 2; i++) {
-			spriteList.add(new GhostEntity(Ghostimg,0,(height/10)*i,30, 30, dy, dx, 5));
+			spriteList.add(new GhostEntity(Ghostimg,width*Math.random(),height*Math.random(),30, 30, dy*i, dx, 5));
 		}
 	}
 
-	public int calcDamage() {
-		int Damage = playerKills*30 + 30;
-		return Damage;
+
+		public void Upgrade() {
+		if(player.getGold() >= 100) {
+			LevelTag++;
+			for(int i = 1; i < spriteList.size(); i++) {
+				spriteList.remove(spriteList.get(i));
+				player.setGold(0);
+			}
+		}
 	}
-
-
-
-
-
-		public void checkCollisionAndRemove(){
-			ArrayList<Entity> removeList = new ArrayList<>();
-
-			if(player.laser != null && player.laser.getActive()){
-				for(int i = 1; i < spriteList.size(); i++) {
-					if (spriteList.get(i).collision(player.laser)) {
-						player.laser.setActive(false);
-						player.laser = null;
-						GhostEntity g = (GhostEntity)spriteList.get(i);
-						g.setHealth(g.getHealth() - player.getDamage());
-						if (g.getHealth() <= 0) {
-							playerKills++;
-							GhostKilled++;
-							Gold += g.getGold();
-							removeList.add(g);
-						}
-					}
-					if(player.laser == null)
-						break;
+		public void GhostLocation() {
+			for(int i = 1; i < Constant; i++) {
+				System.out.println("Test");
+				spriteList.add(new GhostEntity(Ghostimg, width*Math.random(),height*Math.random(),30, 30, dy*i, dx, 5*LevelTag));
+				spriteList.add(new GhostEntity(Ghostimg, width*Math.random(),height*Math.random(),30, 30, dy, dx*i, 5*LevelTag));
+				double x = player.getxPos() - spriteList.get(i).getxPos();
+				double y = player.getyPos() - spriteList.get(i).getyPos();
+				double z = Math.sqrt(Math.pow(x, 2)+ Math.pow(y, 2));
+				if(z < 200) {
+					spriteList.get(i).setxPos(width*Math.random());
+					spriteList.get(i).setyPos(height*Math.random());
 				}
 			}
-			spriteList.removeAll(removeList); // Alt namnet på arraylist
 		}
 		public int calcHealth() {
 			int x = 0;
 			for (int i = 1; i < spriteList.size(); i++) {
 				GhostEntity g = (GhostEntity)spriteList.get(i);
+				System.out.println(g.getHealth());
 				if (g.getHealth() < 0) {
-					g.setHealth((int) (g.getHealth() * -1.25));
+					g.setHealth((int) (g.getHealth() * LevelTag*1.05 + 30));
 				} else {
-					g.setHealth((int) (g.getHealth() * 1.25));
+					g.setHealth((int) (g.getHealth() * LevelTag*1.05 + 30));
 				}
 				x = g.getHealth();
 			}
@@ -168,7 +132,7 @@ public class GameMain implements KeyListener{
 		for(int i = 1; i < spriteList.size(); i++) {
 			GhostEntity g = (GhostEntity) spriteList.get(i);
 			if(g.getHealth() <= 0) {
-				g.setSpeed((int) (g.getSpeed() * 1.5));
+				g.setSpeed((int) (g.getSpeed() * LevelTag*1.25 + 30));
 			}
 			x = g.getSpeed();
 		}
@@ -185,40 +149,40 @@ public class GameMain implements KeyListener{
 					double yPos = g.getyPos() - p.getyPos();
 					if (yPos < 0) {
 						if (xPos > 0) {
-							g.setDy(2);
-							g.setDx(-2);
+							g.setDy(dyG);
+							g.setDx(-dxG);
 						}
 						if (xPos == 0) {
-							g.setDy(2);
+							g.setDy(dyG);
 							g.setDx(0);
 						}
 						if (xPos < 0) {
-							g.setDy(2);
-							g.setDx(2);
+							g.setDy(dyG);
+							g.setDx(dxG);
 						}
 					}
 					if (yPos > 0) {
 						if (xPos > 0) {
-							g.setDy(-2);
-							g.setDx(-2);
+							g.setDy(-dyG);
+							g.setDx(-dxG);
 						}
 						if (xPos == 0) {
-							g.setDy(-2);
+							g.setDy(-dyG);
 							g.setDx(0);
 						}
 						if (xPos < 0) {
-							g.setDy(-2);
-							g.setDx(2);
+							g.setDy(-dyG);
+							g.setDx(dxG);
 						}
 					}
 					if (yPos == 0) {
 						if (xPos > 0) {
 							g.setDy(0);
-							g.setDx(-2);
+							g.setDx(-dxG);
 						}
 						if (xPos < 0) {
 							g.setDy(0);
-							g.setDx(2);
+							g.setDx(dxG);
 						}
 					}
 				} else {
@@ -236,12 +200,22 @@ public class GameMain implements KeyListener{
 	}
 
 		public void update(long deltaTime) {
-		calcDamage();
+			try {
+				String path = getClass().getResource("resources/Droid_Lover/droidlover.ttf").getFile();
+				path = URLDecoder.decode(path, "utf-8");
+
+				font = Font.createFont(Font.TRUETYPE_FONT, new File(path));
+				font = font.deriveFont(32f); // Typsnittsstorlek
+			} catch (IOException | FontFormatException e) {
+				System.err.println("Error loading font file: " + e.getMessage());
+				e.printStackTrace();
+			}
+			msg = new TxtContainer("Gold: " + player.getGold(), 10, 32, font, Color.GREEN);
 			for(int i = 1; i <spriteList.size(); i++) {
-				if(GhostKilled == 4) {
-					for(int x = 0; x < 3; x++) {
-						spriteList.add(new GhostEntity(Ghostimg,0,(height/10)*x,calcSpeed(), calcHealth(),1,0, 5));
-						spriteList.add(new GhostEntity(Ghostimg,(width/10)*x,height,calcSpeed(), calcHealth(),0,1, 5));
+				if(GhostKilled == 1) {
+					for(int x = 0; x < 2; x++) {
+						spriteList.add(new GhostEntity(Ghostimg,width*Math.random(),height*Math.random(),calcSpeed(), calcHealth(),dy,dx*x, 5));
+						spriteList.add(new GhostEntity(Ghostimg,width*Math.random(),height*Math.random(),calcSpeed(), calcHealth(),dy,dx*x, 5));
 						GhostKilled = 0;
 					}
 				}
@@ -253,13 +227,19 @@ public class GameMain implements KeyListener{
 					player.laser.setActive(false);
 					player.laser = null;
 				}
+				if(rec.x < 0 | rec.x > width) {
+					player.laser.setActive(false);
+					player.laser = null;
+				}
 			}
 			if (keyDown.get("up")) {
 				player.setImage(Playerimg[3]);
+				direction = "up";
 				player.up();
 			}
 			else if (keyDown.get("down")) {
 				player.setImage(Playerimg[4]);
+				direction = "down";
 				player.down();
 			}
 
@@ -269,11 +249,13 @@ public class GameMain implements KeyListener{
 
 			if (keyDown.get("right")) {
 				player.setImage(Playerimg[1]);
+				direction = "right";
 				player.right();
 			}
 
 			else if (keyDown.get("left")) {
 				player.setImage(Playerimg[2]);
+				direction = "left";
 				player.left();
 			}
 
@@ -290,13 +272,13 @@ public class GameMain implements KeyListener{
 				}
 			}
 			if(keyDown.get("space")) {
-				player.tryToFire();
+				player.tryToFire(direction);
 			}
 			player.move(deltaTime);
-			if(player.getxPos() < 0) { player.setxPos(width - player.getWidth());}
-			if(player.getyPos() < 0) { player.setyPos(height - player.getHeight());}
-			if(player.getyPos() + player.getHeight() > height) {player.setyPos(0);}
-			if(player.getxPos() + player.getWidth() > width) {player.setxPos(0);}
+			if(player.getxPos() < 0) { player.setxPos(0);}
+			if(player.getyPos() < 0) { player.setyPos(0);}
+			if(player.getyPos() + player.getHeight() > height) {player.setyPos(height- player.getHeight());}
+			if(player.getxPos() + player.getWidth() > width) {player.setxPos(width- player.getWidth());}
 
 			if(player.laser != null && player.laser.getActive()) {
 				player.laser.move(deltaTime);
@@ -316,23 +298,29 @@ public class GameMain implements KeyListener{
 				spriteList.get(i).move(deltaTime);
 
 				// FARLIG
-				if (player.collision(spriteList.get(i)))
+				if (player.collision(spriteList.get(i))) {
 					spriteList.remove(player);
+					gameRunning = false;
+					try {
+						gameScreen.close();
+					} catch (GameCloseException e) {
+						throw new RuntimeException(e);
+					}
+				}
 			}
 
 			checkCollisionAndRemove();
+			Upgrade();
+			GhostLocation();
 		}
 
 		public void render(){
-		gameScreen.render(msg);
-/*
 			gameScreen.beginRender();
 			gameScreen.openRender(msg);
 			gameScreen.openRender(spriteList);
 
 			gameScreen.show();
 
- */
 		}
 
 		public void gameLoop() {
@@ -341,11 +329,17 @@ public class GameMain implements KeyListener{
 			while (gameRunning) {
 				long deltaTime = System.nanoTime() - lastUpdateTime;
 
-				if (deltaTime > 33333333) {
+				if (deltaTime > 8333333) {
 					lastUpdateTime = System.nanoTime();
 					update(deltaTime);
 					render();
 					CalcTracking();
+					for(int i = 1; i < spriteList.size(); i++) {
+						GhostEntity g = (GhostEntity) spriteList.get(i);
+						if(spriteList.size() >= 10*LevelTag+ 10) {
+							spriteList.remove(g);
+						}
+					}
 				}
 			}
 		}
