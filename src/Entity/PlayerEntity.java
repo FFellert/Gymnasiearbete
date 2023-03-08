@@ -10,6 +10,8 @@ public class PlayerEntity extends Entity{
     int Gold;
     int Damage;
 
+    String direction;
+
 
     public PlayerEntity(Image image, double xPos, double yPos, int speed, int Gold, int Damage) {
         super(image, xPos, yPos, speed);
@@ -53,15 +55,29 @@ public class PlayerEntity extends Entity{
     public void setDamage(int Damage) {
         this.Damage = Damage;
     }
-    public boolean tryToFire() {
+    public boolean tryToFire(String direction) {
         if(laser == null || !laser.getActive()){
-            laser = new LaserEntity(new ImageIcon(getClass().getResource("../resources/Laser.png")).getImage(), xPos+13, yPos, 90);
-            laser.setActive(true);
+            if(direction == "up") {
+                laser = new LaserEntity(new ImageIcon(getClass().getResource("../resources/Laserup.png")).getImage(), xPos+13, yPos, 800, 0, -1);
+                laser.setActive(true);
+            }
+            if(direction == "down") {
+                laser = new LaserEntity(new ImageIcon(getClass().getResource("../resources/Laserup.png")).getImage(), xPos+13, yPos, 800, 0, 1);
+                laser.setActive(true);
+            }
+            if(direction == "left") {
+                laser = new LaserEntity(new ImageIcon(getClass().getResource("../resources/LaserRight.png")).getImage(), xPos+13, yPos, 800, -1, 0);
+                laser.setActive(true);
+            }
+            if(direction == "right") {
+                laser = new LaserEntity(new ImageIcon(getClass().getResource("../resources/LaserRight.png")).getImage(), xPos+13, yPos, 800, 1, 0);
+                laser.setActive(true);
+            }
+
             return true;
         }else
             return false;
     }
-
     public void draw(Graphics2D g) {
         if(laser != null && laser.getActive()){
             laser.draw(g);
