@@ -5,9 +5,12 @@ import java.awt.*;
 public class LaserEntity extends Entity {
 
     public LaserEntity laser = null;  // ingen missil!
-    public LaserEntity(Image image, double xPos, double yPos, int speed) {
+    public int dy;
+    public int dx;
+    public LaserEntity(Image image, double xPos, double yPos, int speed, int dx, int dy) {
         super(image, xPos, yPos, speed);
-        dy = -1;
+        this.dy = dy;
+        this.dx = dx;
         this.setActive(false);
     }
 
