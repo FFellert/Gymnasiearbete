@@ -19,8 +19,10 @@ public class GameMain implements KeyListener{
 	public int GhostKilled = 0;
 	public int playerKills = 0;
 	public int LevelTag = 0;
+	public int Ghost = 0;
+	public int size = 1100;
+	public int Tags = 0;
 	private GameScreen gameScreen;
-	public int Constant = 1;
 	int width = 1200;
 	int height = 1200;
 	public int dy;
@@ -28,6 +30,7 @@ public class GameMain implements KeyListener{
 	public int dxG = 3;
 	public int dyG = 3;
 	public String direction;
+	public int Gold = 10;
 	Image[] Playerimg = new Image[5];
 	public Font font = null;
 	private TxtContainer msg;
@@ -59,8 +62,8 @@ public class GameMain implements KeyListener{
 					GhostEntity g = (GhostEntity)spriteList.get(i);
 					g.setHealth(g.getHealth() - player.getDamage());
 					if (g.getHealth() <= 0) {
-						playerKills++;
 						GhostKilled++;
+						playerKills++;
 						player.setGold(player.getGold() + g.getGold());
 						removeList.add(g);
 					}
@@ -79,13 +82,13 @@ public class GameMain implements KeyListener{
 		Playerimg[2] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/playerImgLeft.png"))).getImage();
 		Playerimg[3] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/playerImgUp.png"))).getImage();
 		Playerimg[4] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/playerImgDown.png"))).getImage();
-		player = new PlayerEntity(Playerimg[0], (width/2), (height/2), 400, 0, LevelTag*(playerKills*25) +1000);
+		player = new PlayerEntity(Playerimg[0], (width/2), (height/2), 400, 0, 30);
 		spriteList.add(player);
 		for (int i = 1; i < 2; i++) {
-			spriteList.add(new GhostEntity(Ghostimg,width*Math.random(),height*Math.random(),30, 30, dy*i, dx, 5));
+			spriteList.add(new GhostEntity(Ghostimg,width*Math.random(),height*Math.random(),30, 30, dy*i, dx, Gold));
 		}
 		for(int i = 1; i < 2; i++) {
-			spriteList.add(new GhostEntity(Ghostimg,width*Math.random(),height*Math.random(),30, 30, dy*i, dx, 5));
+			spriteList.add(new GhostEntity(Ghostimg,width*Math.random(),height*Math.random(),30, 30, dy*i, dx, Gold));
 		}
 	}
 
@@ -100,44 +103,49 @@ public class GameMain implements KeyListener{
 		}
 	}
 		public void GhostLocation() {
-			for(int i = 1; i < Constant; i++) {
-				System.out.println("Test");
-				spriteList.add(new GhostEntity(Ghostimg, width*Math.random(),height*Math.random(),30, 30, dy*i, dx, 5*LevelTag));
-				spriteList.add(new GhostEntity(Ghostimg, width*Math.random(),height*Math.random(),30, 30, dy, dx*i, 5*LevelTag));
-				double x = player.getxPos() - spriteList.get(i).getxPos();
-				double y = player.getyPos() - spriteList.get(i).getyPos();
-				double z = Math.sqrt(Math.pow(x, 2)+ Math.pow(y, 2));
-				if(z < 200) {
-					spriteList.get(i).setxPos(width*Math.random());
-					spriteList.get(i).setyPos(height*Math.random());
+			if(size < spriteList.size()) {
+				for(int i = 1; i < 2; i++) {
+					spriteList.add(new GhostEntity(Ghostimg, width*Math.random(),height*Math.random(),30, 30, dy*i, dx, Gold*LevelTag));
+					spriteList.add(new GhostEntity(Ghostimg, width*Math.random(),height*Math.random(),30, 30, dy, dx*i, Gold*LevelTag));
+					double x = player.getxPos() - spriteList.get(i).getxPos();
+					double y = player.getyPos() - spriteList.get(i).getyPos();
+					double z = Math.sqrt(Math.pow(x, 2)+ Math.pow(y, 2));
+					size = spriteList.size();
+					if(z < 200) {
+						spriteList.get(i).setxPos(width*Math.random());
+						spriteList.get(i).setyPos(height*Math.random());
+					}
 				}
 			}
 		}
-		public int calcHealth() {
-			int x = 0;
-			for (int i = 1; i < spriteList.size(); i++) {
-				GhostEntity g = (GhostEntity)spriteList.get(i);
-				System.out.println(g.getHealth());
-				if (g.getHealth() < 0) {
-					g.setHealth((int) (g.getHealth() * LevelTag*1.05 + 30));
-				} else {
-					g.setHealth((int) (g.getHealth() * LevelTag*1.05 + 30));
-				}
-				x = g.getHealth();
-			}
-			return x;
+	public int CalcDamage() {
+		int x;
+		if(GhostKilled > Ghost) {
+			Ghost = GhostKilled;
+			x = (LevelTag*(playerKills*12) + 30);
 		}
-		public int calcSpeed() {
-		int x = 0;
-		for(int i = 1; i < spriteList.size(); i++) {
-			GhostEntity g = (GhostEntity) spriteList.get(i);
-			if(g.getHealth() <= 0) {
-				g.setSpeed((int) (g.getSpeed() * LevelTag*1.25 + 30));
-			}
-			x = g.getSpeed();
+		else{
+			x = (LevelTag*(playerKills*12) +30);
 		}
 		return x;
 	}
+		public int calcHealth() {
+			int x = 0;
+
+			if(Tags < LevelTag) {
+				for (int i = 1; i < spriteList.size(); i++) {
+					GhostEntity g = (GhostEntity)spriteList.get(i);
+					if (g.getHealth() < 0) {
+						g.setHealth((int) (g.getHealth() * LevelTag*1.05 + 30));
+					} else {
+						g.setHealth((int) (g.getHealth() * LevelTag*1.05 + 30));
+					}
+					x = g.getHealth();
+					Tags = LevelTag;
+				}
+			}
+			return x;
+		}
 
 		public void CalcTracking() {
 		try {
@@ -187,11 +195,7 @@ public class GameMain implements KeyListener{
 					}
 				} else {
 					gameRunning = false;
-					try {
-						gameScreen.close();
-					} catch (GameCloseException e) {
-						throw new RuntimeException(e);
-					}
+					System.exit(0);
 				}
 			}
 		}catch (ClassCastException e) {
@@ -211,16 +215,14 @@ public class GameMain implements KeyListener{
 				e.printStackTrace();
 			}
 			msg = new TxtContainer("Gold: " + player.getGold(), 10, 32, font, Color.GREEN);
-			for(int i = 1; i <spriteList.size(); i++) {
-				if(GhostKilled == 1) {
-					for(int x = 0; x < 2; x++) {
-						spriteList.add(new GhostEntity(Ghostimg,width*Math.random(),height*Math.random(),calcSpeed(), calcHealth(),dy,dx*x, 5));
-						spriteList.add(new GhostEntity(Ghostimg,width*Math.random(),height*Math.random(),calcSpeed(), calcHealth(),dy,dx*x, 5));
+				if(GhostKilled == 2) {
+					for(int i = 0; i < 2; i++) {
+						spriteList.add(new GhostEntity(Ghostimg,width*Math.random(),height*Math.random(),30, calcHealth(),dy,dx*i, Gold));
+						spriteList.add(new GhostEntity(Ghostimg,width*Math.random(),height*Math.random(),30, calcHealth(),dy,dx*i, Gold));
 						GhostKilled = 0;
 					}
 				}
 
-			}
 			if(player.laser != null && player.laser.getActive()) {
 				Rectangle rec = player.laser.getRectangle();
 				if(rec.y < 0 | rec.y > height) {
@@ -265,11 +267,7 @@ public class GameMain implements KeyListener{
 
 			if (keyDown.get("exit")) {
 				gameRunning = false;
-				try {
-					gameScreen.close();
-				} catch (GameCloseException e) {
-					throw new RuntimeException(e);
-				}
+				System.exit(0);
 			}
 			if(keyDown.get("space")) {
 				player.tryToFire(direction);
@@ -301,14 +299,10 @@ public class GameMain implements KeyListener{
 				if (player.collision(spriteList.get(i))) {
 					spriteList.remove(player);
 					gameRunning = false;
-					try {
-						gameScreen.close();
-					} catch (GameCloseException e) {
-						throw new RuntimeException(e);
-					}
+					System.exit(0);
 				}
 			}
-
+			player.setDamage(CalcDamage());
 			checkCollisionAndRemove();
 			Upgrade();
 			GhostLocation();
