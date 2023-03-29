@@ -69,18 +69,6 @@ public class GameMain implements KeyListener {
         if (player.laser != null && player.laser.getActive()) {
             for (int i = 1; i < spriteList.size(); i++) {
                 if (spriteList.get(i).collision(player.laser)) {
-                    /*double x = player.laser.getxPos() - spriteList.get(i).getxPos();
-                    double y = player.laser.getyPos() - spriteList.get(i).getyPos();
-                    double z = Math.sqrt(Math.pow(x,2) + Math.pow(y,2));
-                    if(z < 100) {
-                        GhostEntity g = (GhostEntity) spriteList.get(i);
-                        spriteList.remove(g);
-                        GhostKilled++;
-                        playerKills++;
-                        player.setGold(player.getGold() + g.getGold());
-                        removeList.add(g);
-                    }
-                     */
                     player.laser.setActive(false);
                     player.laser = null;
                     GhostEntity g = (GhostEntity) spriteList.get(i);
