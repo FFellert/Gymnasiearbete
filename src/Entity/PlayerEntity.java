@@ -9,14 +9,14 @@ public class PlayerEntity extends Entity{
     public LaserEntity laser = null;
     int Gold;
     int Damage;
+    int Health;
 
-    String direction;
 
-
-    public PlayerEntity(Image image, double xPos, double yPos, int speed, int Gold, int Damage) {
-        super(image, xPos, yPos, speed);
-        this.Gold = Gold;
-        this.Damage = Damage;
+    public PlayerEntity(Image image, double xPos, double yPos, int speed, int Gold, int Damage, int Health) {
+        super(image, xPos, yPos, speed);    //Ärver från Entity
+        this.Gold = Gold;                   //Mitt guld-värde
+        this.Damage = Damage;               //Damage
+        this.Health = Health;
     }
 
     public void left(){
@@ -57,7 +57,7 @@ public class PlayerEntity extends Entity{
     }
     public boolean tryToFire(String direction) {
         if(laser == null || !laser.getActive()){
-            if(direction == "up") {
+            if(direction == "up") { //Sätter dy och dx baserat på i vilken riktning som min PlayerEntity kollar
                 laser = new LaserEntity(new ImageIcon(getClass().getResource("../resources/Laserup.png")).getImage(), xPos+13, yPos, 800, 0, -1);
                 laser.setActive(true);
             }
@@ -77,6 +77,12 @@ public class PlayerEntity extends Entity{
             return true;
         }else
             return false;
+    }
+    public int getHealth() {
+        return Health;
+    }
+    public void setHealth(int Health) {
+        this.Health = Health;
     }
     public void draw(Graphics2D g) {
         if(laser != null && laser.getActive()){
