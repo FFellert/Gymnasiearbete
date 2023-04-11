@@ -1,2 +1,2 @@
 # Gymnasiearbete
-Idle game with interactive menu
+GymnasieArbete with following Scary Ghosts --- BOO SCARY 
