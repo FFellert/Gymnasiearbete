@@ -123,16 +123,6 @@ public class GameMain implements KeyListener {
     public void GhostLocation() { //Om GhostEntity kolliderar med sig självt ökar i storlek
         int k = 1;
             ArrayList<Entity> removeList = new ArrayList<>();
-            for (int i = 1; i < spriteList.size()-1; i++) {
-                GhostEntity g = (GhostEntity) spriteList.get(i);
-                if(g.collision(spriteList.get(i+1))) {
-                    spriteList.get(i+1).setImage(GhostImgx1);
-                    GhostKilled++;
-                    if(g.collision(spriteList.get(i+1))) {
-                        spriteList.get(i+1).setImage(GhostImgx2);
-                        GhostKilled++;
-                    }
-                }
                 if(GhostTag > 3) {
                     GhostTag = 3;
                 }
@@ -142,8 +132,6 @@ public class GameMain implements KeyListener {
                     k++;
                 }
             }
-            spriteList.removeAll(removeList); // Alt namnet på arraylist
-        }
 
 
 
