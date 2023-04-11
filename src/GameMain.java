@@ -169,59 +169,20 @@ public class GameMain implements KeyListener {
         return x;
     }
 
-    public void CalcTracking() { //Ser till att GhostEntity alltid försöker komma åt PlayerEntity och kollidera med PlayerEntity.
-        try {
-            PlayerEntity p = (PlayerEntity) spriteList.get(0);
-            for (int i = 1; i < spriteList.size(); i++) {
-                GhostEntity g = (GhostEntity) spriteList.get(i);
-                if (g.getxPos() != p.getxPos() && g.getyPos() != p.getyPos()) {
-                    double xPos = g.getxPos() - p.getxPos();
-                    double yPos = g.getyPos() - p.getyPos();
-                    if (yPos < 0) {
-                        if (xPos > 0) {
-                            g.setDy(dyG);
-                            g.setDx(-dxG);
-                        }
-                        if (xPos == 0) {
-                            g.setDy(dyG);
-                            g.setDx(0);
-                        }
-                        if (xPos < 0) {
-                            g.setDy(dyG);
-                            g.setDx(dxG);
-                        }
-                    }
-                    if (yPos > 0) {
-                        if (xPos > 0) {
-                            g.setDy(-dyG);
-                            g.setDx(-dxG);
-                        }
-                        if (xPos == 0) {
-                            g.setDy(-dyG);
-                            g.setDx(0);
-                        }
-                        if (xPos < 0) {
-                            g.setDy(-dyG);
-                            g.setDx(dxG);
-                        }
-                    }
-                    if (yPos == 0) {
-                        if (xPos > 0) {
-                            g.setDy(0);
-                            g.setDx(-dxG);
-                        }
-                        if (xPos < 0) {
-                            g.setDy(0);
-                            g.setDx(dxG);
-                        }
-                    }
-                } else {
-                    gameRunning = false;
-                    System.exit(0);
-                }
+    public void CalcTracking() {
+        PlayerEntity player = (PlayerEntity) spriteList.get(0);
+        for (int i = 1; i < spriteList.size(); i++) {
+            GhostEntity ghost = (GhostEntity) spriteList.get(i);
+            double xPos = ghost.getxPos() - player.getxPos();
+            double yPos = ghost.getyPos() - player.getyPos();
+            int dx = xPos == 0 ? 0 : xPos > 0 ? -dxG : dxG;
+            int dy = yPos == 0 ? 0 : yPos > 0 ? -dyG : dyG;
+            ghost.setDx(dx);
+            ghost.setDy(dy);
+            if (xPos == 0 && yPos == 0) {
+                gameRunning = false;
+                System.exit(0);
             }
-        } catch (ClassCastException e) {
-            throw new RuntimeException(e);
         }
     }
 
