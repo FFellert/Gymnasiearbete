@@ -24,12 +24,6 @@ public class GhostEntity extends Entity {
     public int getGold() {
         return Gold;
     }
-    public int getSpeed() {
-        return speed;
-    }
-    public void setSpeed(int speed) {
-        this.speed = speed;
-    }
     public void setDx(int dx) {
         this.dx = dx;
     }
