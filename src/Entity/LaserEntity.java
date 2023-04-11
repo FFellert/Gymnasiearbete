@@ -17,9 +17,6 @@ public class LaserEntity extends Entity {
     public double getyPos(){
         return yPos;
     }
-    public int getSpeed() {
-        return speed;
-    }
 
     /**
      * Metod som gör förflyttningen, dvs ändrar xPos och yPos
