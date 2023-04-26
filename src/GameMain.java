@@ -16,17 +16,15 @@ public class GameMain implements KeyListener {
     private HashMap<String, Boolean> keyDown = new HashMap<>();
     private boolean gameRunning = true;
     private PlayerEntity player;
-    private CatEntity Cat;
     public int GhostKilled = 0; //När mina entities förutom  PlayerEntity dör läggs det till ett värde i GhostKilled
-    public int playerKills = 0; //Antalet döda av spelaren
     public int LevelTag = 0;   //Ökar för var 100 Guld man får
-    public double GhostTag = 1;     //Forcefield som ökar med 0.5% per 1000 Guld
 //
     int x = 1; //Variabel
     public int Tags = 0; //Kollar om Tags < GhostTag senare i koden
 
 
     int width = 1200; //Width
+    int m = 1;
     int height = 1200; //Height
     public int dy; //Hastighet i y-led
     public int dx; //Hastighet i x-led
@@ -39,17 +37,9 @@ public class GameMain implements KeyListener {
     public Font font = null; //Fonten för mitt Guld-värde när det ökar
     private TxtContainer msg;
     Image GhostImg; //Mina olika bilder när GhostEntity kolliderar med varandra
-    Image GhostImgx1;
     Image GhostImgx2;
-    Image KattImg; //Kattbild om du vill bli glad :<)
-    Image HealthImg_1;
-    Image HealthImg_2;
-
-    Image HealthImg_3;
     private GameScreen gameScreen = new GameScreen("Game", width, height, false); // false vid testkörning
     private ArrayList<Entity> spriteList = new ArrayList<Entity>();
-    private ArrayList<CatEntity> CatList = new ArrayList<CatEntity>();
-
     public GameMain() {
         loadImages();
         gameScreen.setKeyListener(this);
@@ -75,7 +65,6 @@ public class GameMain implements KeyListener {
                     g.setHealth(g.getHealth() - player.getDamage());
                     if (g.getHealth() <= 0) {
                         GhostKilled++;
-                        playerKills++;
                         player.setGold(player.getGold() + g.getGold());
                         removeList.add(g);
                     }
@@ -90,7 +79,6 @@ public class GameMain implements KeyListener {
     public void loadImages() {
         ImgContainer background = new ImgContainer(0, 0, "resources/Background.png");
         gameScreen.setBackground(background);
-        KattImg = new ImageIcon(getClass().getResource("resources/FlygandeKatten.jpg")).getImage();
         GhostImg = new ImageIcon(getClass().getResource("resources/ghostImg.png")).getImage();
         GhostImgx2 = new ImageIcon(getClass().getResource("resources/ghostImgx2.25.png")).getImage();
         Playerimg[0] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/playerImg.png"))).getImage();
@@ -98,18 +86,14 @@ public class GameMain implements KeyListener {
         Playerimg[2] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/playerImgLeft.png"))).getImage();
         Playerimg[3] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/playerImgUp.png"))).getImage();
         Playerimg[4] = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/playerImgDown.png"))).getImage();
-        HealthImg_1 = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/HealthImg#1.png"))).getImage();
-        HealthImg_2 = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/HealthImg#2.png"))).getImage();
-        HealthImg_3 = new ImageIcon(Objects.requireNonNull(getClass().getResource("resources/HealthImg#3.png"))).getImage();
 
         player = new PlayerEntity(Playerimg[0], (width / 2), (height / 2), 400, 0, 30, Health);
-        Cat = new CatEntity(HealthImg_1, player.getxPos(), player.getyPos() + 5, 0);
         spriteList.add(player);
         for (int i = 1; i < 2; i++) {
             spriteList.add(new GhostEntity(GhostImg, width-200, height * Math.random(), 30, 30, dy * i, dx, LevelTag * 2 + Gold));
         }
         for (int i = 1; i < 2; i++) {
-            spriteList.add(new GhostEntity(GhostImg, width * Math.random(), height-200, 30, 30, dy * i, dx, LevelTag * 2 + Gold));
+            spriteList.add(new GhostEntity(GhostImg, width * Math.random(), height - 200, 30, 30, dy * i, dx, LevelTag * 2 + Gold));
         }
     }
 
@@ -120,23 +104,11 @@ public class GameMain implements KeyListener {
         }
     }
 
-    public void GhostLocation() { //Om GhostEntity kolliderar med sig självt ökar i storlek
-        int k = 1;
-            ArrayList<Entity> removeList = new ArrayList<>();
-                if(GhostTag > 3) {
-                    GhostTag = 3;
-                }
-                if(player.getGold() >10000*k) {
-                    double c = GhostTag;
-                    GhostTag = c*1.0005;
-                    k++;
-                }
-            }
 
 
 
-    public int CalcDamage() { //Ökar skadan som PlayerEntity gör baserat på Leveltag och playerKills med ett start-värde på 30.
-        return (LevelTag * (playerKills * 12) + 30);
+    public int CalcDamage() { //Ökar skadan som PlayerEntity gör baserat på Leveltag och GhostKilled med ett start-värde på 30.
+        return (LevelTag * (GhostKilled * 12) + 30);
     }
 
     public int calcHealth() { //Ökar Health för GhostEntity baserat på LevelTag och deras tidigare Health med en Konstant = 30.
@@ -167,9 +139,12 @@ public class GameMain implements KeyListener {
             int dy = yPos == 0 ? 0 : yPos > 0 ? -dyG : dyG;
             ghost.setDx(dx);
             ghost.setDy(dy);
-            if (xPos == 0 && yPos == 0) {
-                gameRunning = false;
-                System.exit(0);
+            if (player.collision(ghost)) {
+                player.setHealth(player.getHealth()-20);
+                if(player.getHealth() <= 0) {
+                    gameRunning = false;
+                    System.exit(0);
+                }
             }
         }
     }
@@ -185,29 +160,29 @@ public class GameMain implements KeyListener {
             System.err.println("Error loading font file: " + e.getMessage());
             e.printStackTrace();
         }
-        msg = new TxtContainer("Gold: " + player.getGold(), 10, 32, font, Color.GREEN);
+        msg = new TxtContainer("Gold: " + player.getGold() + " PlayerKills: " +GhostKilled, 10, 32, font, Color.GREEN);
 
-        if (GhostKilled >= 2) { //Om det har dött mer eller lika med två GhostEntities skapas det fyra till i deras ställe
-            if(player.getxPos() < width/2- 100) { //Kollar var PlayerEntity xPos är och placerar GhostEntity på en viss plats för att det inte ska bli en instakill.
+        if (GhostKilled >= 2*m) { //Om det har dött mer eller lika med två GhostEntities skapas det fyra till i deras ställe
+            if(player.getxPos() < width/2 - 100) { //Kollar var PlayerEntity xPos är och placerar GhostEntity på en viss plats för att det inte ska bli en instakill.
                 for (int i = 0; i < 2; i++) {
                     spriteList.add(new GhostEntity(GhostImg, width + player.getxPos(), height * Math.random(), 30, calcHealth(), dy, dx * i, Gold * LevelTag + Gold));
                     spriteList.add(new GhostEntity(GhostImg, width + player.getWidth(), height * Math.random(), 30, calcHealth(), dy, dx * i, Gold * LevelTag + Gold));
-                    GhostKilled = 0;
+                    m++;
                 }
 
             }
-            if(player.getxPos() > width/2+ 100) {
+            if(player.getxPos() > width/2 + 100) {
                 for (int i = 0; i < 2; i++) {
                     spriteList.add(new GhostEntity(GhostImg, width -player.getxPos(), height * Math.random(), 30, calcHealth(), dy, dx * i, Gold * LevelTag + Gold));
                     spriteList.add(new GhostEntity(GhostImg, width -player.getxPos(), height * Math.random(), 30, calcHealth(), dy, dx * i, Gold * LevelTag + Gold));
-                    GhostKilled = 0;
+                    m++;
                 }
             }
             else{
                 for (int i = 0; i < 2; i++) {
                     spriteList.add(new GhostEntity(GhostImg, width, height * Math.random(), 30, calcHealth(), dy, dx * i, Gold * LevelTag + Gold));
                     spriteList.add(new GhostEntity(GhostImg, width, height * Math.random(), 30, calcHealth(), dy, dx * i, Gold * LevelTag + Gold));
-                    GhostKilled = 0;
+                    m++;
                 }
             }
         }
@@ -249,7 +224,6 @@ public class GameMain implements KeyListener {
         if (keyDown.get("exit")) {
             gameRunning = false;
             System.exit(0);
-
         }
         if (keyDown.get("space")) {
             player.tryToFire(direction);
@@ -289,34 +263,25 @@ public class GameMain implements KeyListener {
             if (player.collision(spriteList.get(i))) {
                 spriteList.remove(spriteList.get(i));
                 GhostKilled++;
+                player.setGold((player.getGold()/2));
                 player.setHealth(player.getHealth() - 20);
                 if(player.getHealth() <= 0) {
+                    System.out.println("Congratulations of the score of " +player.getGold() + " Gold! And the score of " +GhostKilled +" Kills!");
                     spriteList.remove(player);
                     gameRunning = false;
                     System.exit(0);
                 }
-                if(player.getHealth() == 50) {
-                    CatList.add(Cat);
-                }
-                if(player.getHealth() == 30) {
-                    Cat.setImage(HealthImg_2);
-                }
-                if(player.getHealth() == 10) {
-                    Cat.setImage(HealthImg_3);
-                }             
             }
         }
-        player.setDamage(CalcDamage()); //Sätter PlayerEntity skada baserat på som sagts tidigare PlayerKills och LevelTag
+        player.setDamage(CalcDamage()); //Sätter PlayerEntity skada baserat på som sagts tidigare GhostKilled och LevelTag
         checkCollisionAndRemove();
         Upgrade();
-        GhostLocation();
     }
 
     public void render() { //Min render-funktion
         gameScreen.beginRender();
         gameScreen.openRender(msg);
         gameScreen.openRender(spriteList);
-        gameScreen.openRender(CatList);
 
         gameScreen.show();
 
